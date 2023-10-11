@@ -10,24 +10,33 @@
     <body>
         <h1>NS Flex Compare</h1>
 
-        <p>These are the prices for all single fare second class train tickets from Nijmegen to Utrecht:</p>
+        <form action="/" method="post">
+            <input autocomplete="off" autofocus id="fromStation" name="fromStation" placeholder="From" type="text">
+            <input autocomplete="off" autofocus id="toStation" name="toStation" placeholder="To" type="text">
+            <button class="btn btn-primary" type="submit">Get prices</button>
+        </form>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Discount</th>
-                    <th>Price</th>
-                </tr>
-            </thead>
+        {% if prices %}
+            <p>These are the prices for all single fare second class train tickets from {{ fromStation }} to {{ toStation }}:</p>
 
-              <tbody>
-                {% for price in prices %}
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ price.discount }}</td>
-                        <td>{{ price.price }}</td>
+                        <th>Discount</th>
+                        <th>Price</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+
+                <tbody>
+                    {% for price in prices %}
+                        <tr>
+                            <td>{{ price.discount }}</td>
+                            <td>{{ price.price }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
     </body>
 </html>
