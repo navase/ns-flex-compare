@@ -11,8 +11,20 @@
         <h1>NS Flex Compare</h1>
 
         <form action="/" method="post">
-            <input autocomplete="off" autofocus id="fromStation" name="fromStation" placeholder="From" type="text">
-            <input autocomplete="off" autofocus id="toStation" name="toStation" placeholder="To" type="text">
+            <label for="fromStation">From</label>
+            <select autofocus id="fromStation" name="fromStation">
+                {% for station in stations %}
+                    <option value="{{ station }}" {{ 'selected' if station == fromStation }}>{{ station }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="toStation">To</label>
+            <select id="toStation" name="toStation">
+                {% for station in stations %}
+                    <option value="{{ station }}" {{ 'selected' if station == toStation }}>{{ station }}</option>
+                {% endfor %}
+            </select>
+
             <button class="btn btn-primary" type="submit">Get prices</button>
         </form>
 

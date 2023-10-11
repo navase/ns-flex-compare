@@ -37,7 +37,21 @@ def index():
             price['price'] = locale.currency(price['price'] / 100, grouping=True).replace('Eu', '€')
             price['discount'] = price['discountType'].replace('_', ' ').capitalize()
 
-        return render_template('index.html', prices=prices, fromStation=fromStation, toStation=toStation)
+        return render_template('index.html', stations=stations(), prices=prices, fromStation=fromStation, toStation=toStation)
 
     else:
-        return render_template('index.html')
+        return render_template('index.html', stations=stations())
+
+
+def stations():
+    # Get list of train stations from NS API
+    url = 'https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/stations?countryCodes=nl'
+    headers = {'Ocp-Apim-Subscription-Key': os.environ.get('NS_APP_KEY')}
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    stations = []
+    for station in data['payload']:
+        stations.append(station['namen']['lang'])
+
+    return sorted(stations)
