@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import Flask, abort, render_template, request
 import locale
 import requests
 
@@ -15,13 +15,28 @@ def index():
         fromStation = request.form.get("fromStation")
         toStation = request.form.get("toStation")
 
+        # Validate that fromStation and toStation are existing stations and not the same station
+        if fromStation not in stations() or toStation not in stations() or fromStation == toStation:
+            abort(400)
+
+        # Get public price information key from environment variables
+        public_price_information_key = os.environ.get('PUBLIC_PRICE_INFORMATION_KEY')
+
+        # Validate that public price information key is set
+        if not public_price_information_key:
+            abort(401)
+
         # Get prices from fromStation to toStation from NS API
         url = "https://gateway.apiportal.ns.nl/public-prijsinformatie/prices?fromStation={}&toStation={}".format(fromStation, toStation)
-        headers = {'Ocp-Apim-Subscription-Key': os.environ.get('PUBLIC_PRICE_INFORMATION_KEY')}
+        headers = {'Ocp-Apim-Subscription-Key': public_price_information_key}
         response = requests.get(url, headers=headers)
-        data = response.json()
+
+        # Validate that response is successful
+        if response.status_code != 200:
+            abort(response.status_code)
 
         # Select only the prices for a single fare in second class
+        data = response.json()
         prices = []
         for price_option in data['priceOptions']:
             if price_option['type'] == 'ROUTE_WITHOUT_OPTIONS':
@@ -44,12 +59,24 @@ def index():
 
 
 def stations():
+    # Get NS app key from environment variables
+    ns_app_key = os.environ.get('NS_APP_KEY')
+
+    # Validate that NS app key is set
+    if not ns_app_key:
+        abort(401)
+
     # Get list of train stations from NS API
     url = 'https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/stations?countryCodes=nl'
-    headers = {'Ocp-Apim-Subscription-Key': os.environ.get('NS_APP_KEY')}
+    headers = {'Ocp-Apim-Subscription-Key': ns_app_key}
     response = requests.get(url, headers=headers)
-    data = response.json()
 
+    # Validate that response is successful
+    if response.status_code != 200:
+        abort(response.status_code)
+
+    # Select station names
+    data = response.json()
     stations = []
     for station in data['payload']:
         stations.append(station['namen']['lang'])
